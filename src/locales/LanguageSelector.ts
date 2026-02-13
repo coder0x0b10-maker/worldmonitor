@@ -26,8 +26,11 @@ export class LanguageSelector {
     this.selectElement.addEventListener('change', () => {
       const newLocale = this.selectElement?.value as typeof I18N_CONFIG.availableLocales[number];
       if (newLocale) {
-        i18n.setLocale(newLocale);
-        this.reloadPage();
+        // Force reload with new locale
+        localStorage.setItem('worldmonitor-locale', newLocale);
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', newLocale);
+        window.location.href = url.toString();
       }
     });
 
@@ -47,16 +50,12 @@ export class LanguageSelector {
   }
 
   public setLocale(locale: string): void {
-    i18n.setLocale(locale as any);
-    this.reloadPage();
-  }
-
-  private reloadPage(): void {
-    // Update URL with locale param
-    const url = new URL(window.location.href);
-    url.searchParams.set('lang', i18n.getLocale());
-    window.history.replaceState({}, '', url.toString());
-    window.location.reload();
+    if (I18N_CONFIG.availableLocales.includes(locale as any)) {
+      localStorage.setItem('worldmonitor-locale', locale);
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', locale);
+      window.location.href = url.toString();
+    }
   }
 }
 

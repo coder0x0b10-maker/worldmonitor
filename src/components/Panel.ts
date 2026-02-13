@@ -81,7 +81,7 @@ export class Panel {
       const infoBtn = document.createElement('button');
       infoBtn.className = 'panel-info-btn';
       infoBtn.innerHTML = '?';
-      infoBtn.setAttribute('aria-label', i18n.t('common.view'));
+      infoBtn.setAttribute('aria-label', i18n.t('common.viewMethodology'));
 
       const tooltip = document.createElement('div');
       tooltip.className = 'panel-info-tooltip';

@@ -34,7 +34,7 @@ export default {
     true: "是",
     false: "否",
     resize: "拖動調整大小（雙擊重置）",
-    view: "檢視方法說明",
+    viewMethodology: "檢視方法說明",
   },
 
   // App

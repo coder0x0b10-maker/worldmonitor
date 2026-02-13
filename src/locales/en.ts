@@ -34,7 +34,7 @@ export default {
     true: "Yes",
     false: "No",
     resize: "Drag to resize (double-click to reset)",
-    view: "View methodology info",
+    viewMethodology: "View methodology info",
   },
 
   // App

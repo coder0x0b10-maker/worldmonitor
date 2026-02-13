@@ -534,7 +534,7 @@ export default defineConfig({
       },
       // OpenSky Network - Aircraft tracking (military flight detection)
       '/api/opensky': {
-        target: 'https://opensky-network.org/api',
+        target: 'https://opensky-network.org/api/states/all',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path.replace(/^\/api\/opensky/, ''),

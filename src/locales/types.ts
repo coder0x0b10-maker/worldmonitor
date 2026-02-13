@@ -55,18 +55,22 @@ export function detectLocale(): Locale {
   const urlParams = new URLSearchParams(window.location.search);
   const urlLocale = urlParams.get('lang') as Locale;
   if (urlLocale && I18N_CONFIG.availableLocales.includes(urlLocale)) {
+    console.log(`[i18n] Detected locale from URL: ${urlLocale}`);
     return urlLocale;
   }
 
   // Then try localStorage
   const storedLocale = localStorage.getItem('worldmonitor-locale') as Locale;
   if (storedLocale && I18N_CONFIG.availableLocales.includes(storedLocale)) {
+    console.log(`[i18n] Detected locale from Storage: ${storedLocale}`);
     return storedLocale;
   }
 
   // Then try browser language
   const browserLang = navigator.language;
-  if (browserLang === 'zh-TW' || browserLang === 'zh-Hant') {
+  console.log(`[i18n] Browser language: ${browserLang}`);
+  
+  if (browserLang.startsWith('zh')) {
     return 'zh-TW';
   }
 
