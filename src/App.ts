@@ -74,6 +74,7 @@ import {
   ClimateAnomalyPanel,
   PopulationExposurePanel,
 } from '@/components';
+import { languageSelector, i18n } from '@/locales';
 import type { SearchResult } from '@/components/SearchModal';
 import { collectStoryData } from '@/services/story-data';
 import { openStoryModal } from '@/components/StoryModal';
@@ -245,6 +246,7 @@ export class App {
     }
 
     this.renderLayout();
+    this.initLanguageSelector();
     this.signalModal = new SignalModal();
     this.signalModal.setLocationClickHandler((lat, lon) => {
       this.map?.setCenter(lat, lon, 4);
@@ -1095,7 +1097,7 @@ export class App {
             <a href="${SITE_VARIANT === 'tech' ? 'https://worldmonitor.app' : '#'}"
                class="variant-option ${SITE_VARIANT !== 'tech' ? 'active' : ''}"
                data-variant="world"
-               title="Geopolitical Intelligence">
+               title="${i18n.t('app.subtitle')}">
               <span class="variant-icon">🌍</span>
               <span class="variant-label">WORLD</span>
             </a>
@@ -1122,31 +1124,32 @@ export class App {
           </div>
           <div class="region-selector">
             <select id="regionSelect" class="region-select">
-              <option value="global">Global</option>
-              <option value="america">Americas</option>
-              <option value="mena">MENA</option>
-              <option value="eu">Europe</option>
-              <option value="asia">Asia</option>
-              <option value="latam">Latin America</option>
-              <option value="africa">Africa</option>
-              <option value="oceania">Oceania</option>
+              <option value="global">${i18n.t('map.presets.global')}</option>
+              <option value="america">${i18n.t('map.presets.americas')}</option>
+              <option value="mena">${i18n.t('map.presets.mena')}</option>
+              <option value="eu">${i18n.t('map.presets.europe')}</option>
+              <option value="asia">${i18n.t('map.presets.asia')}</option>
+              <option value="latam">${i18n.t('map.presets.latam')}</option>
+              <option value="africa">${i18n.t('map.presets.africa')}</option>
+              <option value="oceania">${i18n.t('map.presets.oceania')}</option>
             </select>
           </div>
         </div>
         <div class="header-right">
-          <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> Search</button>
-          <button class="copy-link-btn" id="copyLinkBtn">Copy Link</button>
+          <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${i18n.t('common.search')}</button>
+          <button class="copy-link-btn" id="copyLinkBtn">${i18n.t('map.shareView')}</button>
           <span class="time-display" id="timeDisplay">--:--:-- UTC</span>
-          <button class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
-          <button class="settings-btn" id="settingsBtn">⚙ PANELS</button>
-          <button class="sources-btn" id="sourcesBtn">📡 SOURCES</button>
+          <div class="language-selector-wrapper" id="languageSelector"></div>
+          <button class="fullscreen-btn" id="fullscreenBtn" title="${i18n.t('map.fullscreen')}">⛶</button>
+          <button class="settings-btn" id="settingsBtn">⚙ ${i18n.t('map.layers')}</button>
+          <button class="sources-btn" id="sourcesBtn">📡 ${i18n.t('news.sources')}</button>
         </div>
       </div>
       <div class="main-content">
         <div class="map-section" id="mapSection">
           <div class="panel-header">
             <div class="panel-header-left">
-              <span class="panel-title">${SITE_VARIANT === 'tech' ? 'Global Tech' : 'Global Situation'}</span>
+              <span class="panel-title">${SITE_VARIANT === 'tech' ? 'Global Tech' : i18n.t('map.title')}</span>
             </div>
             <button class="map-pin-btn" id="mapPinBtn" title="Pin map to top">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1884,6 +1887,13 @@ export class App {
         console.log('[App] User idle - pausing animations to save resources');
       }
     }, this.IDLE_PAUSE_MS);
+  }
+
+  private initLanguageSelector(): void {
+    const container = document.getElementById('languageSelector');
+    if (container) {
+      languageSelector.mount(container);
+    }
   }
 
   private setupUrlStateSync(): void {

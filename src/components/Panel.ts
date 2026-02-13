@@ -1,3 +1,5 @@
+import { i18n } from '@/locales';
+
 export interface PanelOptions {
   id: string;
   title: string;
@@ -79,7 +81,7 @@ export class Panel {
       const infoBtn = document.createElement('button');
       infoBtn.className = 'panel-info-btn';
       infoBtn.innerHTML = '?';
-      infoBtn.setAttribute('aria-label', 'Show methodology info');
+      infoBtn.setAttribute('aria-label', i18n.t('common.view'));
 
       const tooltip = document.createElement('div');
       tooltip.className = 'panel-info-tooltip';
@@ -127,7 +129,7 @@ export class Panel {
     // Add resize handle
     this.resizeHandle = document.createElement('div');
     this.resizeHandle.className = 'panel-resize-handle';
-    this.resizeHandle.title = 'Drag to resize (double-click to reset)';
+    this.resizeHandle.title = i18n.t('common.resize');
     this.resizeHandle.draggable = false; // Prevent parent's drag from capturing
     this.element.appendChild(this.resizeHandle);
     this.setupResizeHandlers();
@@ -257,7 +259,7 @@ export class Panel {
     return this.element;
   }
 
-  public showLoading(message = 'Loading'): void {
+  public showLoading(message = i18n.t('common.loading')): void {
     this.content.innerHTML = `
       <div class="panel-loading">
         <div class="panel-loading-radar">
@@ -269,7 +271,7 @@ export class Panel {
     `;
   }
 
-  public showError(message = 'Failed to load data'): void {
+  public showError(message = i18n.t('common.error')): void {
     this.content.innerHTML = `<div class="error-message">${message}</div>`;
   }
 

@@ -7,6 +7,7 @@ import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
 import { analysisWorker, enrichWithVelocityML, getClusterAssetContext, getAssetLabel, MAX_DISTANCE_KM, activityTracker, generateSummary } from '@/services';
 import { getSourcePropagandaRisk, getSourceTier, getSourceType } from '@/config/feeds';
 import { SITE_VARIANT } from '@/config';
+import { i18n } from '@/locales';
 
 /** Threshold for enabling virtual scrolling */
 const VIRTUAL_SCROLL_THRESHOLD = 15;
@@ -120,7 +121,7 @@ export class NewsPanel extends Panel {
     this.summaryBtn = document.createElement('button');
     this.summaryBtn.className = 'panel-summarize-btn';
     this.summaryBtn.innerHTML = '✨';
-    this.summaryBtn.title = 'Summarize this panel';
+    this.summaryBtn.title = i18n.t('news.summarize');
     this.summaryBtn.addEventListener('click', () => this.handleSummarize());
 
     // Insert before count element (use inherited this.header directly)
@@ -149,7 +150,7 @@ export class NewsPanel extends Panel {
     this.summaryBtn.innerHTML = '<span class="panel-summarize-spinner"></span>';
     this.summaryBtn.disabled = true;
     this.summaryContainer.style.display = 'block';
-    this.summaryContainer.innerHTML = '<div class="panel-summary-loading">Generating summary...</div>';
+    this.summaryContainer.innerHTML = `<div class="panel-summary-loading">${i18n.t('news.generatingSummary')}</div>`;
 
     try {
       const result = await generateSummary(this.currentHeadlines.slice(0, 8));
@@ -157,11 +158,11 @@ export class NewsPanel extends Panel {
         this.setCachedSummary(cacheKey, result.summary);
         this.showSummary(result.summary);
       } else {
-        this.summaryContainer.innerHTML = '<div class="panel-summary-error">Could not generate summary</div>';
+        this.summaryContainer.innerHTML = `<div class="panel-summary-error">${i18n.t('news.summaryError')}</div>`;
         setTimeout(() => this.hideSummary(), 3000);
       }
     } catch {
-      this.summaryContainer.innerHTML = '<div class="panel-summary-error">Summary failed</div>';
+      this.summaryContainer.innerHTML = `<div class="panel-summary-error">${i18n.t('news.summaryFailed')}</div>`;
       setTimeout(() => this.hideSummary(), 3000);
     } finally {
       this.isSummarizing = false;
@@ -176,7 +177,7 @@ export class NewsPanel extends Panel {
     this.summaryContainer.innerHTML = `
       <div class="panel-summary-content">
         <span class="panel-summary-text">${escapeHtml(summary)}</span>
-        <button class="panel-summary-close" title="Close">×</button>
+        <button class="panel-summary-close" title="${i18n.t('common.close')}">×</button>
       </div>
     `;
     this.summaryContainer.querySelector('.panel-summary-close')?.addEventListener('click', () => this.hideSummary());
@@ -229,7 +230,7 @@ export class NewsPanel extends Panel {
 
   public renderNews(items: NewsItem[]): void {
     if (items.length === 0) {
-      this.showError('No news available');
+      this.showError(i18n.t('news.noResults'));
       return;
     }
 
@@ -251,7 +252,7 @@ export class NewsPanel extends Panel {
     } catch (error) {
       if (requestId !== this.renderRequestId) return;
       console.error('[NewsPanel] Failed to cluster news:', error);
-      this.showError('Failed to cluster news');
+      this.showError(i18n.t('news.clusterError'));
     }
   }
 
@@ -344,7 +345,7 @@ export class NewsPanel extends Panel {
     showNewTag: boolean
   ): string {
     const sourceBadge = cluster.sourceCount > 1
-      ? `<span class="source-count">${cluster.sourceCount} sources</span>`
+      ? `<span class="source-count">${i18n.t('news.sourcesCount', { count: cluster.sourceCount })}</span>`
       : '';
 
     const velocity = cluster.velocity;
@@ -357,12 +358,12 @@ export class NewsPanel extends Panel {
       ? `<span class="sentiment-badge ${velocity?.sentiment}">${sentimentIcon}</span>`
       : '';
 
-    const newTag = showNewTag ? '<span class="new-tag">NEW</span>' : '';
+    const newTag = showNewTag ? `<span class="new-tag">${i18n.t('news.new')}</span>` : '';
 
     // Propaganda risk indicator for primary source
     const primaryPropRisk = getSourcePropagandaRisk(cluster.primarySource);
     const primaryPropBadge = primaryPropRisk.risk !== 'low'
-      ? `<span class="propaganda-badge ${primaryPropRisk.risk}" title="${escapeHtml(primaryPropRisk.note || `State-affiliated: ${primaryPropRisk.stateAffiliated || 'Unknown'}`)}">${primaryPropRisk.risk === 'high' ? '⚠ State Media' : '! Caution'}</span>`
+      ? `<span class="propaganda-badge ${primaryPropRisk.risk}" title="${escapeHtml(primaryPropRisk.note || `State-affiliated: ${primaryPropRisk.stateAffiliated || 'Unknown'}`)}">${primaryPropRisk.risk === 'high' ? `⚠ ${i18n.t('news.stateMedia')}` : `! ${i18n.t('news.caution')}`}</span>`
       : '';
 
     // Source credibility badge for primary source (T1=Wire, T2=Verified outlet)
@@ -370,13 +371,13 @@ export class NewsPanel extends Panel {
     const primaryType = getSourceType(cluster.primarySource);
     const tierLabel = primaryTier === 1 ? 'Wire' : ''; // Don't show "Major" - confusing with story importance
     const tierBadge = primaryTier <= 2
-      ? `<span class="tier-badge tier-${primaryTier}" title="${primaryType === 'wire' ? 'Wire Service - Highest reliability' : primaryType === 'gov' ? 'Official Government Source' : 'Verified News Outlet'}">${primaryTier === 1 ? '★' : '●'}${tierLabel ? ` ${tierLabel}` : ''}</span>`
+      ? `<span class="tier-badge tier-${primaryTier}" title="${primaryType === 'wire' ? i18n.t('news.wireService') : primaryType === 'gov' ? i18n.t('news.officialGov') : i18n.t('news.verifiedOutlet')}">${primaryTier === 1 ? '★' : '●'}${tierLabel ? ` ${tierLabel}` : ''}</span>`
       : '';
 
     // Build "Also reported by" section for multi-source confirmation
     const otherSources = cluster.topSources.filter(s => s.name !== cluster.primarySource);
     const topSourcesHtml = otherSources.length > 0
-      ? `<span class="also-reported">Also:</span>` + otherSources
+      ? `<span class="also-reported">${i18n.t('news.also')}</span>` + otherSources
           .map(s => {
             const propRisk = getSourcePropagandaRisk(s.name);
             const propBadge = propRisk.risk !== 'low'
@@ -396,7 +397,7 @@ export class NewsPanel extends Panel {
       ? `
         <div class="related-assets" data-cluster-id="${escapeHtml(cluster.id)}">
           <div class="related-assets-header">
-            Related assets near ${escapeHtml(assetContext.origin.label)}
+            ${i18n.t('news.relatedAssets')} ${escapeHtml(assetContext.origin.label)}
             <span class="related-assets-range">(${MAX_DISTANCE_KM}km)</span>
           </div>
           <div class="related-assets-list">
@@ -414,7 +415,12 @@ export class NewsPanel extends Panel {
 
     // Category tag from threat classification
     const cat = cluster.threat?.category;
-    const catLabel = cat && cat !== 'general' ? cat.charAt(0).toUpperCase() + cat.slice(1) : '';
+    // Map category to translation key if exists, otherwise capitalize
+    const catLabel = cat && cat !== 'general' 
+      ? (i18n.t(`signals.category.${cat}` as any) !== `signals.category.${cat}` 
+          ? i18n.t(`signals.category.${cat}` as any) 
+          : cat.charAt(0).toUpperCase() + cat.slice(1))
+      : '';
     const catColor = cluster.threat ? THREAT_COLORS[cluster.threat.level] : '';
     const categoryBadge = catLabel
       ? `<span class="category-tag" style="color:${catColor};border-color:${catColor}40;background:${catColor}20">${catLabel}</span>`
@@ -439,7 +445,7 @@ export class NewsPanel extends Panel {
           ${sourceBadge}
           ${velocityBadge}
           ${sentimentBadge}
-          ${cluster.isAlert ? '<span class="alert-tag">ALERT</span>' : ''}
+          ${cluster.isAlert ? `<span class="alert-tag">${i18n.t('news.alert')}</span>` : ''}
           ${categoryBadge}
         </div>
         <a class="item-title" href="${sanitizeUrl(cluster.primaryLink)}" target="_blank" rel="noopener">${escapeHtml(cluster.primaryTitle)}</a>
